@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <img src="{% static 'images/college_logo.png' %}" alt="College Logo" class="logo">
+        <h1>Welcome, {{ request.user.username }}</h1>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger">Logout</a>
+    </header>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card complaint-form-card">
+                <div class="card-header">
+                    <h3>Raise a Complaint</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="complaintForm">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card complaints-list-card">
+                <div class="card-header">
+                    <h3>Your Complaints</h3>
+                </div>
+                <div class="card-body">
+                    {% if complaints %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in complaints %}
+                                <tr>
+                                    <td>{{ complaint.get_complaint_type_display }}</td>
+                                    <td>{{ complaint.description|truncatechars:30 }}</td>
+                                    <td>{{ complaint.severity }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'in_progress' %}warning{% else %}danger{% endif %}">
+                                            {{ complaint.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ complaint.created_at|date:"d M Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No complaints submitted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

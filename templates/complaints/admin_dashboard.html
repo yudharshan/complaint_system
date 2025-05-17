@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <header class="dashboard-header">
+        <img src="{% static 'images/college_logo.png' %}" alt="College Logo" class="logo">
+        <h1>Admin Dashboard</h1>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger">Logout</a>
+    </header>
+    
+    <div class="filters mb-4">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="type" class="form-label">Filter by Type:</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">All</option>
+                    <option value="hostel" {% if request.GET.type == 'hostel' %}selected{% endif %}>Hostel</option>
+                    <option value="mess" {% if request.GET.type == 'mess' %}selected{% endif %}>Mess</option>
+                    <option value="faculty" {% if request.GET.type == 'faculty' %}selected{% endif %}>Faculty</option>
+                    <option value="library" {% if request.GET.type == 'library' %}selected{% endif %}>Library</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="sort" class="form-label">Sort by:</label>
+                <select name="sort" id="sort" class="form-select">
+                    <option value="">Latest First</option>
+                    <option value="severity" {% if request.GET.sort == 'severity' %}selected{% endif %}>Severity</option>
+                </select>
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in complaints %}
+                <tr>
+                    <td>{{ complaint.user.username }}</td>
+                    <td>{{ complaint.get_complaint_type_display }}</td>
+                    <td>
+                        {% if complaint.complaint_type == 'hostel' %}
+                        Room: {{ complaint.room_number }}
+                        {% elif complaint.complaint_type == 'faculty' %}
+                        Dept: {{ complaint.department }}, Faculty: {{ complaint.faculty_name }}
+                        {% elif complaint.complaint_type == 'library' %}
+                        Issue: {{ complaint.get_library_issue_type_display }}
+                        {% if complaint.book_name %}({{ complaint.book_name }}){% endif %}
+                        {% endif %}
+                    </td>
+                    <td>{{ complaint.severity }}</td>
+                    <td>
+                        <span class="badge bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'in_progress' %}warning{% else %}danger{% endif %}">
+                            {{ complaint.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ complaint.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <a href="{% url 'update_status' complaint.pk %}" class="btn btn-sm btn-outline-primary">Update</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
